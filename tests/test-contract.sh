@@ -18,6 +18,8 @@ grep -Fq 'FROM ${ADGUARDHOME_IMAGE} AS adguardhome' Dockerfile
 grep -Fq 'FROM ${TAILSCALE_IMAGE} AS runtime' Dockerfile
 grep -Fq 'COPY --from=adguardhome /opt/adguardhome/AdGuardHome' Dockerfile
 grep -Fq 'ENTRYPOINT ["/usr/local/bin/tailnet-dns-gw-entrypoint"]' Dockerfile
+grep -Fq 'DNS_RELAY_IDLE_TIMEOUT="${DNS_RELAY_IDLE_TIMEOUT:-5}"' entrypoint.sh
+grep -Fq 'socat -T "$DNS_RELAY_IDLE_TIMEOUT" "UDP4-LISTEN:' entrypoint.sh
 grep -Fq 'environment: production-promotion' .github/workflows/promote-stable.yml
 grep -Fq 'TAILNET_DNS_DEPLOY_CONFIRMED=1' scripts/check-stable-and-deploy.sh
 grep -Fq 'last-successful-digest' scripts/check-stable-and-deploy.sh

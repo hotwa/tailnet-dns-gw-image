@@ -9,6 +9,7 @@ ADGUARD_CONF="${ADGUARD_CONF:-/opt/adguardhome/conf/AdGuardHome.yaml}"
 ADGUARD_WORK="${ADGUARD_WORK:-/opt/adguardhome/work}"
 DNS_RELAY_LISTEN="${DNS_RELAY_LISTEN:-0.0.0.0:5354}"
 DNS_RELAY_TARGET="${DNS_RELAY_TARGET:-100.64.0.11:5353}"
+DNS_RELAY_IDLE_TIMEOUT="${DNS_RELAY_IDLE_TIMEOUT:-5}"
 
 TAILSCALED_PID=""
 ADGUARD_PID=""
@@ -30,6 +31,11 @@ shutdown() {
 trap shutdown INT TERM
 
 mkdir -p "$(dirname "$TS_SOCKET")" "$TS_STATE_DIR" /opt/adguardhome/conf "$ADGUARD_WORK"
+
+case "$DNS_RELAY_IDLE_TIMEOUT" in
+  *[!0-9]*|'') log "invalid DNS_RELAY_IDLE_TIMEOUT: $DNS_RELAY_IDLE_TIMEOUT"; exit 1 ;;
+esac
+[ "$DNS_RELAY_IDLE_TIMEOUT" -gt 0 ] || { log "DNS_RELAY_IDLE_TIMEOUT must be greater than zero"; exit 1; }
 
 log "starting tailscaled"
 tailscaled --state="${TS_STATE_DIR}/tailscaled.state" --socket="$TS_SOCKET" --port="$TS_PORT" &
@@ -80,7 +86,7 @@ done
 relay_host=${DNS_RELAY_LISTEN%:*}
 relay_port=${DNS_RELAY_LISTEN##*:}
 log "starting integrated DNS relay on ${DNS_RELAY_LISTEN} to ${DNS_RELAY_TARGET}"
-socat "UDP4-LISTEN:${relay_port},bind=${relay_host},reuseaddr,fork" "UDP4:${DNS_RELAY_TARGET}" &
+socat -T "$DNS_RELAY_IDLE_TIMEOUT" "UDP4-LISTEN:${relay_port},bind=${relay_host},reuseaddr,fork" "UDP4:${DNS_RELAY_TARGET}" &
 DNS_RELAY_UDP_PID="$!"
 socat "TCP4-LISTEN:${relay_port},bind=${relay_host},reuseaddr,fork" "TCP4:${DNS_RELAY_TARGET}" &
 DNS_RELAY_TCP_PID="$!"

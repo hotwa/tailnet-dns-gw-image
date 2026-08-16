@@ -11,7 +11,9 @@ AdGuard configuration, certificates, or production Compose environment.
 - The official AdGuard Home stable container supplies only the
   `/opt/adguardhome/AdGuardHome` binary.
 - `entrypoint.sh` starts the persisted Tailscale identity, the Tailnet-only
-  AdGuard Home instance, and the bounded TCP/UDP DNS relay.
+  AdGuard Home instance, and the bounded TCP/UDP DNS relay. Forked UDP relay
+  workers have a five-second idle timeout so periodic health probes cannot
+  accumulate permanent `socat` children.
 - `healthcheck.sh` verifies the Tailscale address, AdGuard listeners, relay
   listener, and a real DNS lookup.
 
