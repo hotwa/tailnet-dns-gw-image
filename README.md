@@ -30,6 +30,12 @@ Candidates never update production. `Promote candidate to stable` requires the
 approved `stable` digest with service-specific health checks and rollback; it
 must not build this image or blindly follow a moving tag.
 
+The `scripts/` and `systemd/` directories provide that deployment layer. The
+first digest deployment is an explicit write-gated operation. Later timer runs
+only deploy a different operator-promoted `stable` digest, preserve the current
+Tailnet IPv4, back up both AdGuard configurations and Tailscale state, validate
+the complete DNS path, and restore the previous local image on failure.
+
 No Docker Hub credential is required: the workflow reads public upstream images
 and publishes to GHCR with its repository-scoped `GITHUB_TOKEN`.
 

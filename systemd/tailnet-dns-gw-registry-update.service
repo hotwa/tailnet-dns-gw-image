@@ -1,0 +1,14 @@
+[Unit]
+Description=Safely deploy the operator-promoted Tailnet DNS Gateway image
+Requires=docker.service
+After=docker.service network-online.target gateway-stack.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/tailnet-dns-gw-registry-deploy.env
+ExecStart=/usr/local/libexec/tailnet-dns-gw-registry-deploy/check-stable-and-deploy.sh
+TimeoutStartSec=15min
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
